@@ -1,15 +1,20 @@
-// pages/index.js
-import Layout from '../components/Layout';
-import Link from 'next/link';
+import React from "react";
+import Link from "next/link";
+import styles from "../styles/Home.module.css";
 
-const Home = () => {
-    return (
-        <Layout>
-            <h2>Welcome to the Simulation</h2>
-            <Link href="/pilot">Pilot Page</Link>
-            <Link href="/atc">ATC Page</Link>
-        </Layout>
-    );
-};
-
-export default Home;
+export default function Home() {
+  return (
+    <div className={styles.container}>
+      <h1 className={styles.title}>ATC and Pilot Communication</h1>
+      <p className={styles.description}>Choose your role to begin:</p>
+      <div className={styles.buttons}>
+        <Link href="/pilot">
+          <button className={styles.btn}>Join as Pilot</button>
+        </Link>
+        <Link href="/atc">
+          <button className={styles.btn}>Join as ATC</button>
+        </Link>
+      </div>
+    </div>
+  );
+}
