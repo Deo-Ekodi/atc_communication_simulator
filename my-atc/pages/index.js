@@ -1,82 +1,47 @@
 // pages/index.js
 import { useEffect, useState } from 'react';
-import io from 'socket.io-client';
-
-let socket;
+import MessageInput from '../components/MessageInput';
+import MessageDisplay from '../components/MessageDisplay';
 
 export default function Home() {
-  const [message, setMessage] = useState('');
-  const [chat, setChat] = useState([]);
+  const [messages, setMessages] = useState([]);
+  const [role, setRole] = useState('Pilot'); // Change to 'ATC' for ATC role
 
   useEffect(() => {
-    // Set up socket connection
-    socket = io();
-    socket.on('message', (msg) => {
-      setChat((prev) => [...prev, msg]);
-    });
+    const fetchMessages = async () => {
+      try {
+        const res = await fetch('/api/message');
+        if (!res.ok) throw new Error('Network response was not ok');
+        const data = await res.json();
+        setMessages(data);
+      } catch (error) {
+        console.error('Failed to fetch messages:', error);
+      }
+    };
+    
+
+    fetchMessages();
+    const interval = setInterval(fetchMessages, 2000); // Poll every 2 seconds
+    return () => clearInterval(interval);
   }, []);
 
-  const handleSendMessage = () => {
-    const speech = new SpeechSynthesisUtterance(message);
-    speechSynthesis.speak(speech);
-    socket.emit('message', message);
-    setMessage('');
-  };
-
-  const startListening = () => {
-    const recognition = new webkitSpeechRecognition();
-    recognition.onresult = (event) => {
-      const transcript = event.results[0][0].transcript;
-      socket.emit('message', transcript);
-    };
-    recognition.start();
+  const handleSend = async (content) => {
+    await fetch('/api/message', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ sender: role, content }),
+    });
+    const updatedMessages = await (await fetch('/api/message')).json();
+    setMessages(updatedMessages);
   };
 
   return (
-    <div className="flex flex-col lg:flex-row h-screen">
-      {/* ATC Dashboard */}
-      <div className="flex-1 p-5 bg-gray-800 shadow-lg">
-        <h1 className="text-3xl mb-4">ATC Dashboard</h1>
-        <div className="flex mb-4">
-          <input
-            type="text"
-            value={message}
-            onChange={(e) => setMessage(e.target.value)}
-            placeholder="Type a message"
-          />
-          <button
-            onClick={handleSendMessage}
-            className="bg-blue-500 text-white rounded-r-md"
-          >
-            Send
-          </button>
-        </div>
-
-        {/* Message Logs */}
-        <div className="chat-log">
-          <h2 className="text-lg mb-2">Chat Log</h2>
-          {chat.length > 0 ? (
-            chat.map((msg, idx) => (
-              <p key={idx}>{msg}</p>
-            ))
-          ) : (
-            <p className="no-messages">No messages yet...</p>
-          )}
-        </div>
-      </div>
-
-      {/* Pilot Interface */}
-      <div className="flex-1 p-5 bg-gray-700 shadow-lg">
-        <h1 className="text-3xl mb-4">Pilot Interface</h1>
-        <button
-          onClick={startListening}
-          className="pilot-button"
-        >
-          Start Listening
-        </button>
-
-        <p className="mt-5 text-lg">Listen to instructions here...</p>
-      </div>
+    <div>
+      <h1>Airport Communication Simulation</h1>
+      <MessageDisplay messages={messages} />
+      <MessageInput role={role} onSend={handleSend} />
     </div>
   );
 }
