@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { io } from 'socket.io-client';
 
-const socket = io('https://your-app-name.vercel.app'); // Update with your deployed URL
+const socket = io('https://my-atc.vercel.app'); // Update with your deployed URL
 
 const Chat = () => {
   const [message, setMessage] = useState('');
