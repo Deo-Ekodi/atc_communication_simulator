@@ -1,82 +1,73 @@
 // pages/index.js
 import { useEffect, useState } from 'react';
-import io from 'socket.io-client';
+import Pusher from 'pusher-js'; // Ensure correct import
 
-let socket;
-
-export default function Home() {
+const Home = () => {
   const [message, setMessage] = useState('');
   const [chat, setChat] = useState([]);
 
   useEffect(() => {
-    // Set up socket connection
-    socket = io();
-    socket.on('message', (msg) => {
-      setChat((prev) => [...prev, msg]);
+    // Initialize Pusher client-side
+    const pusher = new Pusher(process.env.NEXT_PUBLIC_PUSHER_APP_KEY, {
+      cluster: process.env.NEXT_PUBLIC_PUSHER_CLUSTER, // Ensure this is set
+      encrypted: true, // Use SSL (recommended)
     });
+
+    const channel = pusher.subscribe('chat');
+    channel.bind('message', (data) => {
+      setChat((prev) => [...prev, data.message]);
+    });
+
+    return () => {
+      channel.unbind_all();
+      channel.unsubscribe();
+    };
   }, []);
 
-  const handleSendMessage = () => {
-    const speech = new SpeechSynthesisUtterance(message);
-    speechSynthesis.speak(speech);
-    socket.emit('message', message);
-    setMessage('');
-  };
-
-  const startListening = () => {
-    const recognition = new webkitSpeechRecognition();
-    recognition.onresult = (event) => {
-      const transcript = event.results[0][0].transcript;
-      socket.emit('message', transcript);
-    };
-    recognition.start();
+  const handleSendMessage = async () => {
+    if (message.trim()) {
+      await fetch('/api/message', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ message }),
+      });
+      setMessage(''); // Clear input after sending
+    }
   };
 
   return (
-    <div className="flex flex-col lg:flex-row h-screen">
-      {/* ATC Dashboard */}
-      <div className="flex-1 p-5 bg-gray-800 shadow-lg">
-        <h1 className="text-3xl mb-4">ATC Dashboard</h1>
-        <div className="flex mb-4">
-          <input
-            type="text"
-            value={message}
-            onChange={(e) => setMessage(e.target.value)}
-            placeholder="Type a message"
-          />
-          <button
-            onClick={handleSendMessage}
-            className="bg-blue-500 text-white rounded-r-md"
-          >
-            Send
-          </button>
-        </div>
-
+    <div className="flex h-screen">
+      <div className="w-1/2 p-5 bg-gray-800 text-white">
+        <h1 className="text-2xl mb-4">ATC Dashboard</h1>
+        <input
+          type="text"
+          value={message}
+          onChange={(e) => setMessage(e.target.value)}
+          className="p-2 text-black"
+          placeholder="Type a message"
+        />
+        <button onClick={handleSendMessage} className="ml-2 p-2 bg-blue-500">
+          Send
+        </button>
+        
         {/* Message Logs */}
-        <div className="chat-log">
-          <h2 className="text-lg mb-2">Chat Log</h2>
-          {chat.length > 0 ? (
-            chat.map((msg, idx) => (
-              <p key={idx}>{msg}</p>
-            ))
-          ) : (
-            <p className="no-messages">No messages yet...</p>
-          )}
+        <div className="mt-5">
+          <h2>Chat Log</h2>
+          {chat.map((msg, idx) => (
+            <p key={idx}>{msg}</p>
+          ))}
         </div>
       </div>
 
       {/* Pilot Interface */}
-      <div className="flex-1 p-5 bg-gray-700 shadow-lg">
-        <h1 className="text-3xl mb-4">Pilot Interface</h1>
-        <button
-          onClick={startListening}
-          className="pilot-button"
-        >
-          Start Listening
-        </button>
-
-        <p className="mt-5 text-lg">Listen to instructions here...</p>
+      <div className="w-1/2 p-5 bg-gray-700 text-white">
+        <h1 className="text-2xl mb-4">Pilot Interface</h1>
+        {/* Additional Pilot Interface Components */}
       </div>
     </div>
   );
-}
+};
+
+export default Home;
