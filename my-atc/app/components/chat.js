@@ -1,16 +1,15 @@
-// pages/index.js
-import { useEffect, useState } from 'react';
-import Pusher from 'pusher-js'; // Ensure correct import
+// components/Chat.js
 
-const Home = () => {
+import { useEffect, useState } from 'react';
+import Pusher from 'pusher-js';
+
+const Chat = () => {
   const [message, setMessage] = useState('');
   const [chat, setChat] = useState([]);
 
   useEffect(() => {
-    // Initialize Pusher client-side
     const pusher = new Pusher(process.env.NEXT_PUBLIC_PUSHER_APP_KEY, {
-      cluster: process.env.NEXT_PUBLIC_PUSHER_CLUSTER, // Ensure this is set
-      encrypted: true, // Use SSL (recommended)
+      cluster: process.env.NEXT_PUBLIC_PUSHER_CLUSTER,
     });
 
     const channel = pusher.subscribe('chat');
@@ -33,7 +32,7 @@ const Home = () => {
         },
         body: JSON.stringify({ message }),
       });
-      setMessage(''); // Clear input after sending
+      setMessage('');
     }
   };
 
@@ -51,8 +50,7 @@ const Home = () => {
         <button onClick={handleSendMessage} className="ml-2 p-2 bg-blue-500">
           Send
         </button>
-        
-        {/* Message Logs */}
+
         <div className="mt-5">
           <h2>Chat Log</h2>
           {chat.map((msg, idx) => (
@@ -60,14 +58,8 @@ const Home = () => {
           ))}
         </div>
       </div>
-
-      {/* Pilot Interface */}
-      <div className="w-1/2 p-5 bg-gray-700 text-white">
-        <h1 className="text-2xl mb-4">Pilot Interface</h1>
-        {/* Additional Pilot Interface Components */}
-      </div>
     </div>
   );
 };
 
-export default Home;
+export default Chat;
