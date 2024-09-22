@@ -1,0 +1,40 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Custom Styles */
+body {
+  @apply bg-gray-900 text-gray-200;
+}
+
+h1, h2 {
+  @apply font-bold text-white;
+}
+
+input {
+  @apply p-3 rounded-l-md border border-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500;
+}
+
+button {
+  @apply p-3 rounded-md transition duration-200;
+}
+
+button:hover {
+  @apply opacity-80;
+}
+
+.chat-log {
+  @apply mt-5 bg-gray-700 rounded-md p-3 h-64 overflow-y-auto;
+}
+
+.chat-log p {
+  @apply text-gray-300;
+}
+
+.no-messages {
+  @apply text-gray-400;
+}
+
+.pilot-button {
+  @apply w-full p-4 bg-green-500 text-white rounded-md hover:bg-green-600;
+}
