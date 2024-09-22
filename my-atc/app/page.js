@@ -1,6 +1,6 @@
 "use client"; // This line makes this component a Client Component
 
-import Chat from './components/Chat';
+import Chat from '../components/Chat';
 
 const Home = () => {
   return (
